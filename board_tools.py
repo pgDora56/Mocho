@@ -1,3 +1,4 @@
+# coding=utf-8
 class Board:
     channel = None
     random_ch = None

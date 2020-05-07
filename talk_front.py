@@ -4,6 +4,7 @@ from threading import Timer
 from board_tools import Board, WhiteBoard
 import talkingbot
 from copy import deepcopy
+from execpy import ExecPy
 
 # config.iniの読み込み設定
 conf_ini = configparser.ConfigParser()
@@ -115,6 +116,8 @@ async def on_message(message):
     if not(board.is_owner(message.channel) or board.is_joiner(message.channel)):
         # Board参加者以外はトーキングボットを反応させる
         await tb.reply(message.channel, msg)
+        e = ExecPy()
+        await e.execution(message)
 
     # 以下コマンド処理
 
