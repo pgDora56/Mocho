@@ -1,0 +1,36 @@
+@牧のうどん|しめじうどんにおぼろ昆布を追加して、それでごぼう天かかきあげを2人でシェアをするんだよ！(o・∇・o)
+@ゆきよ|ゆきよさんは姿見にはしませんよ～(o・∇・o)
+@はらみー|はらみーさんはクッションにはしませんよ～(o・∇・o)
+@烏龍茶,ウーロン茶|烏龍茶といえばCG准教授だよね！(o・∇・o)
+@しいな,なんす,ナンス,ナンちゃん,417,４１７,粃|(*>△<)
+@もちょ|呼んだ？(o・∇・o)
+
+####
+@equal:10=sing10連
+@include=sing,しんぐ,シング,寝具,:kokugo:,:hecho:,:oitauniv:,:sakura:
+@call sing.tb
+
+####
+@equal=cg,cgくんって誰？
+@include=cg准教授,しぃ爺,:hahaha:
+@call cg.tb
+
+###
+@equal:10=アユサ10連
+@include=アユサ,あゆゆ,あゆさ,Ayusa,茜屋,:eeee:,:eedone:
+@call ayusa.tb
+
+###
+@separator=, 
+@equal=デレマスルーレット,デレ
+@equal:10=デレ10連
+@equal:2-5=デレユニット生成
+@call dere.tb
+
+###
+@separator=, 
+@equal=ミリオンルーレット,ミリ
+@equal:10=ミリ10連
+@equal:3-5=ミリユニット生成
+@call million.tb
+
