@@ -117,9 +117,3 @@ class Talking:
                         continue
                 elif line[0] == "#":
                     separator = "\n"
-
-        if msg == "何のゲームしよう？":
-            games = ["おもじゃん", "大喜利","コードネーム","天鳳","カタン","ごいた","ブラフ","QMAClone","ドミニオン","ボブジテン","ワードウルフ","おにごっこ","イントロ"]
-            shime = ["しよう！","がいいんじゃない？","がおすすめだよ！","できまりだよ～"]
-            await channel.send(f"{random.choice(games)}{random.choice(shime)}(o・∇・o)")
-        
