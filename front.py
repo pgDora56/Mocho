@@ -16,42 +16,12 @@ conf_mocho = conf_ini["Mocho"]
 accept_ch = list(map(int, conf_mocho["AcceptCh"].split(",")))
 vc_category = int(conf_mocho["VCCategory"])
 
-debug_mode = False
-board_debug = True
-
 client = discord.Client()
-mainchannel = None
 
 async def write(msg):
     global console
     print(msg)
     if console != None: await console.send(msg)
-
-class FileOperation:
-    def __init__(self, which = 0):
-        self.filename = ".bob.txt"
-        if which == 1: 
-            self.filename = ".codename.txt"
-        elif which == 99:
-            self.filename = ".codename-cand.txt"
-        
-
-    def read(self):
-        with open(self.filename, "r", encoding="utf-8") as f:
-            dic = f.readlines()
-        ndic = []
-        for d in dic:
-            ndic.append(d.strip())
-        return ndic
-
-    def add(self, word):
-        be = self.read()
-        if word in be:
-            return False
-        be.append(word)
-        with open(self.filename, 'w', encoding="utf-8") as f:
-            f.write('\n'.join(be))
-        return True
 
 ## 以下クライアントの処理関数
 @client.event
@@ -66,17 +36,19 @@ async def on_ready():
     board = Board(client.get_channel(BOARD_ID),client.get_channel(RANDOM_ID))
     try:
         await write("Login Complete")
-        print(console)
         await write("Success to connect console")
     except Exception as e:
         await write(f"Error: {str(e)}")
 
 @client.event
 async def on_message(message):
-    global fop, client, prevword, parent, mainchannel, score, cwords, cok, cdobon, cdisp, ccolor, clist, ccolor_ans, candop, board, tb
-    msg = message.content
-    if message.author.bot: return
-    if message.channel == board.channel:
+    # メッセージの受信時に呼び出される
+
+    global client, board, tb
+    msg = message.content # メッセージの内容
+    if message.author.bot: return # メッセージを送っているのがbotなら何もしない
+    if message.channel == board.channel: 
+        # ボードに来たのは全部消す
         await message.delete()
         return
 
@@ -112,19 +84,18 @@ async def on_message(message):
 
 
 
-    await write(f"Message Received in {message.channel} by {message.author} in {message.channel.id}")
+    await write(f"Message Received in {message.channel} by {message.author} in {message.channel.id}") # 受信
+
     if not(board.is_owner(message.channel) or board.is_joiner(message.channel)):
-        # Board参加者以外はトーキングボットを反応させる
+        # Board参加者の個チャ以外はトーキングボットを反応させる
         await tb.reply(message.channel, msg)
         e = ExecPy()
         await e.execution(message)
 
-    # 以下コマンド処理
+    # 以下ボードのコマンド処理
 
     elif str(message.channel).startswith("Direct Message"):
         # ダイレクトメッセージの処理
-
-        # ボード
         if msg =="get board owner":
             if message.channel in board.joiner:
                 await message.channel.send(f"あなたは現在参加者です。オーナーになるためには `board exit` で一旦参加者から抜けてください。")
@@ -176,11 +147,10 @@ async def on_message(message):
         elif board.is_joiner(message.channel):
             await board.joiner_write(message.channel, msg)
 
-
-        # ボードここまで
-
 @client.event
 async def on_voice_state_update(member, before, after):
+    # Voiceの状況が変わったときに呼び出される
+    #  チャンネル移動やミュートの解除など（ここではチャンネル移動のみ通知させている）
     befch = before.channel
     aftch = after.channel
     send = False
@@ -200,11 +170,7 @@ async def on_voice_state_update(member, before, after):
     if send:
         await asyncio.sleep(180)
         await msg.delete()
-    print(member.display_name)
         
 
 token = conf_ini.get("Mocho", "Token")
-fop = FileOperation(0)
-cfop = FileOperation(1)
-candop = FileOperation(99)
 client.run(token)
