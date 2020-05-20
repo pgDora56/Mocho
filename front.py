@@ -48,7 +48,8 @@ async def on_message(message):
     msg = message.content # メッセージの内容
     if message.author.bot: # メッセージを送っているのがbotなら何もしない
         if message.author.id == 712672371596591116 and msg.startswith("あやね"):
-            print("あやねる～～もちょだよ～～～(o・∇・o)")
+            await message.channel.send("あやねる～～もちょだよ～～～(o・∇・o)")
+        return
     if message.channel == board.channel: 
         # ボードに来たのは全部消す
         await message.delete()
