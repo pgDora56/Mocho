@@ -1,14 +1,15 @@
 # coding=utf-8
-import sys, io, subprocess
+import sys, io, subprocess, os
 from timeout_decorator import timeout, TimeoutError
 
 class ExecPy:
     @timeout(5)
-    def execute_py(self, code):
-        with open("program.py", mode="w", encoding="utf-8") as f:
-            f.write(code)
+    def execute_py(self, code, filename="program"):
+        if code != "":
+            with open(f"programs/{filename}.py", mode="w", encoding="utf-8") as f:
+                f.write(code)
         try:
-            res = subprocess.check_output(["python3", "program.py"])
+            res = subprocess.check_output(["python3", f"programs/{filename}.py"])
             print(res.decode("utf-8"))
         except Exception as ex:
             print("Execution error:", ex)
@@ -31,16 +32,14 @@ class ExecPy:
             save = False
             repeat = 1
 
+            filename = "program"
             for com in commands:
-                if com == "save":
-                    save = True
-                else:
-                    try:
-                        v = int(com)
-                        if v > 1:
-                            repeat = v
-                    except:
-                        pass
+                try:
+                    v = int(com)
+                    if v > 1:
+                        repeat = v
+                except:
+                    filename = com
 
             scanner = "\n".join(lines[2:])
             mark_cnt = 0
@@ -57,25 +56,27 @@ class ExecPy:
                 else:
                     mark_cnt = 0
             if is_close:
-                if "exit()" in code:
-                    await message.channel.send("can't use exit()")
-                else:
-                    for _ in range(repeat):
-                        with io.StringIO() as f:
+                for _ in range(repeat):
+                    with io.StringIO() as f:
 
-                            # 標準出力を f に切り替える。
-                            sys.stdout = f
+                        # 標準出力を f に切り替える。
+                        sys.stdout = f
 
-                            try:
-                                self.execute_py(code)
-                            except TimeoutError as e:
-                                print(f"Timeout")
-                            except Exception as e:
-                                print(str(e))
-                            # f に出力されたものを文字列として取得
-                            text = f.getvalue()
+                        try:
+                            self.execute_py(code, filename)
+                        except TimeoutError as e:
+                            print(f"Timeout")
+                        except Exception as e:
+                            print(str(e))
+                        # f に出力されたものを文字列として取得
+                        text = f.getvalue()
 
-                            # 標準出力をデフォルトに戻して text を表示
-                            sys.stdout = sys.__stdout__
+                        # 標準出力をデフォルトに戻して text を表示
+                        sys.stdout = sys.__stdout__
 
-                            await message.channel.send(text)
+                        await message.channel.send(text)
+        elif lines[0].startswith("py"):
+            commands = line[0].split()
+            if commands[0] in ["py", "python"] and len(commands) > 1:
+                if os.path.exists(f"programs/{commands[1]}.py"):
+                    execute_py("", commands[1])

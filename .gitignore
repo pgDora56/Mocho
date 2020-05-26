@@ -2,6 +2,6 @@ __pycache__/
 config.ini
 *.tb
 *.out
-program.py
+programs/
 !main.tb
 sing/
