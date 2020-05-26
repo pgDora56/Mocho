@@ -2,13 +2,22 @@ import random
 class Talking:
     next_only_word = []
     def __init__(self, errorch):
-        self.error_notify_channel = errorch
+        self.error_notify_channel = errorch # コンソール用のチャンネルを設定
 
     def append_line(self, filename, line):
+        # ファイルに１行追加
         with open(filename, mode = "a", encoding = "utf-8") as f:
             f.write(f"\n{line}")
 
+    async def seed_reply(self, channel, seed, word_list, fmt="%word%"):
+        random.seed(seed)
+        word = random.choice(word_list)
+        msg = fmt.replace("%word%", word).replace("%seed%", seed)
+        await channel.send(msg)
+        random.seed()
+
     async def reply(self, channel, msg): 
+        # next_only_wordに該当する単語であれば、それを反応させて終了
         for word in self.next_only_word:
             if msg == word[0]:
                 await channel.send(word[1])
@@ -16,6 +25,7 @@ class Talking:
                 return
 
         filelines = []
+        # main.tbの読み込み - 1行ずつfilelinesリストとする
         with open("main.tb", "r", encoding="utf-8") as f:
             filelines = f.readlines()
         filelines.append("#")
@@ -24,9 +34,11 @@ class Talking:
         picknum = 1
         separator = "\n"
         chatflag = False
+        # main.tbの中身を実際にインタプリットする
         while len(filelines) > 0:
             line = filelines.pop(0)
             if line.startswith("@call "):
+                # @callから始まる場合、他のファイルを読み込んで、filelinesの先頭に挿入する
                 try:
                     filename = line[6:].strip()
                     with open(filename, "r", encoding="utf-8") as f:
@@ -36,6 +48,7 @@ class Talking:
                     await self.error_notify_channel.send(f"Error call TalkingBotFile:{filename}")
                 continue
             if chatflag:
+                # そのセクションの単語を拾い、最後まで拾ったらその中からrandomで送信
                 if line[0] == "@":
                     continue
                 elif line[0] == "#":
@@ -54,6 +67,7 @@ class Talking:
                     # randomで追加する
                     randomlines.append(line)
             else:
+                # セクションの頭から見ていき、引っかかるものがあるのかをチェック：あればchatflagを立てて送信を行うようにする
                 if line.startswith("@include="):
                     line_words = line[9:].strip().split(',')
                     #print(f"Judge: {line_words}")
@@ -68,6 +82,7 @@ class Talking:
                             chatflag = True
                             break
                 elif line.startswith("@equal:"):
+                    # 任意の個数まとめて送信する
                     line_msg = line[7:]
                     num = 0
                     mini = 0
@@ -98,6 +113,7 @@ class Talking:
                             break
 
                 elif line.startswith("@separator="):
+                    # 複数まとめて送信する際にその区切りとなる文字を変更する(デフォルトは改行)
                     line_msg = line[11:].replace("\n", "").replace("\r","").replace("<br>","\n")
                     if len(line_msg) > 0:
                         separator = line_msg
