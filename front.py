@@ -93,7 +93,7 @@ async def on_message(message):
         # Board参加者の個チャ以外はトーキングボットを反応させる
         if msg.startswith("もちょ、") and msg.endswith("は好き？"):
             word = msg[4:-4]
-            await tb.seed_reply(message.channel, word, ["すきだよ～！！(o・∇・o)", "かぁ、普通かな(o・∇・o)", "はちょっと苦手かな～(o・∇・o)", "、ぜったいゆるせへん、あたいゆるせへん"], "%seed%%word%")
+            await tb.seed_reply(message.channel, word, [("すきだよ～！！(o・∇・o)", 70), ("かぁ、普通かな(o・∇・o)",20), ("はちょっと苦手かな～(o・∇・o)",7), ("、ぜったいゆるせへん、あたいゆるせへん",3)], "%seed%%word%")
         else:
             await tb.reply(message.channel, msg)
             e = ExecPy()

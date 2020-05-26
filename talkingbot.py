@@ -11,7 +11,10 @@ class Talking:
 
     async def seed_reply(self, channel, seed, word_list, fmt="%word%"):
         random.seed(seed)
-        word = random.choice(word_list)
+        lis = []
+        for w, per in word_list:
+            lis.extend([w for _ in range(per)])
+        word = random.choice(lis)
         msg = fmt.replace("%word%", word).replace("%seed%", seed)
         await channel.send(msg)
         random.seed()
