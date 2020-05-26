@@ -1,11 +1,17 @@
 # coding=utf-8
-import sys, io
+import sys, io, subprocess
 from timeout_decorator import timeout, TimeoutError
 
 class ExecPy:
     @timeout(5)
-    def execute_python(self, code):
-        exec(code)
+    def execute_py(self, code):
+        with open("program.py", mode="w") as f:
+            f.write(code)
+        try:
+            res = subprocess.check_output("python3 program.py")
+        except:
+            res = "Can't move"
+        print(res)
 
     async def execution(self, message):
         msg = message.content
@@ -61,7 +67,7 @@ class ExecPy:
                             sys.stdout = f
 
                             try:
-                                self.execute_python(code)
+                                self.execute_py(code)
                             except TimeoutError as e:
                                 print(f"Timeout")
                             except Exception as e:
