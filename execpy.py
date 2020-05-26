@@ -5,13 +5,13 @@ from timeout_decorator import timeout, TimeoutError
 class ExecPy:
     @timeout(5)
     def execute_py(self, code):
-        with open("program.py", mode="w") as f:
+        with open("program.py", mode="w", encoding="utf-8") as f:
             f.write(code)
         try:
-            res = subprocess.check_output("python3 program.py")
-        except:
-            res = "Can't move"
-        print(res)
+            res = subprocess.check_output(["python3", "program.py"])
+            print(res.decode("utf-8"))
+        except Exception as ex:
+            print("Execution error:", ex)
 
     async def execution(self, message):
         msg = message.content
