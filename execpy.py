@@ -18,9 +18,7 @@ class ExecPy:
         msg = message.content
         lines = msg.split("\n")
         if len(lines) <= 1:
-            print("line nothin")
-            print(lines)
-            return
+            lines.append("")
         
         if lines[0].startswith("py") and lines[1] == "```":
             commands = lines[0].split()
@@ -76,7 +74,25 @@ class ExecPy:
 
                         await message.channel.send(text)
         elif lines[0].startswith("py"):
-            commands = line[0].split()
+            commands = lines[0].split()
+            print(commands)
             if commands[0] in ["py", "python"] and len(commands) > 1:
                 if os.path.exists(f"programs/{commands[1]}.py"):
-                    execute_py("", commands[1])
+                    with io.StringIO() as f:
+
+                        # 標準出力を f に切り替える。
+                        sys.stdout = f
+
+                        try:
+                            self.execute_py("", commands[1])
+                        except TimeoutError as e:
+                            print(f"Timeout")
+                        except Exception as e:
+                            print(str(e))
+                        # f に出力されたものを文字列として取得
+                        text = f.getvalue()
+
+                        # 標準出力をデフォルトに戻して text を表示
+                        sys.stdout = sys.__stdout__
+
+                        await message.channel.send(text)
