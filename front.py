@@ -95,9 +95,9 @@ async def on_message(message):
             word = msg[4:-4]
             await tb.seed_reply(message.channel, word, [("すきだよ～！！(o・∇・o)", 70), ("かぁ、普通かな(o・∇・o)",20), ("はちょっと苦手かな～(o・∇・o)",7), ("、ぜったいゆるせへん、あたいゆるせへん",3)], "%seed%%word%")
         else:
-            await tb.reply(message.channel, msg)
             e = ExecPy()
-            await e.execution(message)
+            if(not await e.execution(message)):
+                await tb.reply(message.channel, msg)
         return
 
     # 以下ボードのコマンド処理

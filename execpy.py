@@ -25,7 +25,7 @@ class ExecPy:
             wakeword = commands.pop(0)
             if not wakeword in ["py", "python"]:
                 print("not wake word")
-                return
+                return False
 
             save = False
             repeat = 1
@@ -71,8 +71,9 @@ class ExecPy:
 
                         # 標準出力をデフォルトに戻して text を表示
                         sys.stdout = sys.__stdout__
-
                         await message.channel.send(text)
+            return True
+
         elif lines[0].startswith("py"):
             commands = lines[0].split()
             print(commands)
@@ -96,3 +97,5 @@ class ExecPy:
                         sys.stdout = sys.__stdout__
 
                         await message.channel.send(text)
+                    return True
+        return False
