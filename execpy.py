@@ -112,7 +112,6 @@ class ExecPy:
 
                         await message.channel.send(text)
                     return True
-        return False
         elif lines[0].startswith("case"):
             shutil.rmtree("case")
             os.mkdir("case")
@@ -128,3 +127,5 @@ class ExecPy:
                     msg = ""
                 else:
                     msg += line
+            return True
+        return False
