@@ -3,5 +3,6 @@ config.ini
 *.tb
 *.out
 programs/
+case/
 !main.tb
 sing/

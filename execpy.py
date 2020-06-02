@@ -1,18 +1,29 @@
 # coding=utf-8
-import sys, io, subprocess, os
+import sys, io, subprocess, os, shutil, glob
 from timeout_decorator import timeout, TimeoutError
 
 class ExecPy:
     @timeout(5)
-    def execute_py(self, code, filename="program"):
+    def execute_py(self, code, filename="program", case=False):
         if code != "":
             with open(f"programs/{filename}.py", mode="w", encoding="utf-8") as f:
                 f.write(code)
-        try:
-            res = subprocess.check_output(["python3", f"programs/{filename}.py"])
-            print(res.decode("utf-8"))
-        except Exception as ex:
-            print("Execution error:", ex)
+        if case:
+            for c in glob.glob("case/*"):
+                print(f"[{c}]")
+                try:
+                    testdata = subprocess.Popen(["cat", c], stdout=subprocess.PIPE)
+                    python = subprocess.Popen(["python3", f"programs/{filename}.py"], stdin=testdata.stdout, stdout=subprocess.PIPE)
+                    print(python.stdout.peek().decode("utf-8"))
+                except Exception as ex:
+                    print("Execution error:", ex)
+
+        else:
+            try:
+                res = subprocess.check_output(["python3", f"programs/{filename}.py"])
+                print(res.decode("utf-8"))
+            except Exception as ex:
+                print("Execution error:", ex)
 
     async def execution(self, message):
         msg = message.content
@@ -27,7 +38,7 @@ class ExecPy:
                 print("not wake word")
                 return False
 
-            save = False
+            case = False
             repeat = 1
 
             filename = "program"
@@ -37,7 +48,10 @@ class ExecPy:
                     if v > 1:
                         repeat = v
                 except:
-                    filename = com
+                    if com == "case":
+                        case = True
+                    else:
+                        filename = com
 
             scanner = "\n".join(lines[2:])
             mark_cnt = 0
@@ -61,7 +75,7 @@ class ExecPy:
                         sys.stdout = f
 
                         try:
-                            self.execute_py(code, filename)
+                            self.execute_py(code, filename, case)
                         except TimeoutError as e:
                             print(f"Timeout")
                         except Exception as e:
@@ -99,3 +113,18 @@ class ExecPy:
                         await message.channel.send(text)
                     return True
         return False
+        elif lines[0].startswith("case"):
+            shutil.rmtree("case")
+            os.mkdir("case")
+            lines.append("")
+            no = 0
+            msg = ""
+            for line in lines[1:]:
+                if line.strip() == "":
+                    if msg == "": continue
+                    with open(f"case/{no}", mode="w") as f:
+                        f.write(msg)
+                    no += 1
+                    msg = ""
+                else:
+                    msg += line
