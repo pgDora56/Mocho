@@ -1,6 +1,7 @@
 # coding=utf-8
 import configparser
 import time
+import discord
 
 # config.iniの読み込み設定
 conf_ini = configparser.ConfigParser()
