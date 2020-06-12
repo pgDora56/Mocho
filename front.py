@@ -5,6 +5,7 @@ from board_tools import Board, WhiteBoard
 import talkingbot
 from copy import deepcopy
 from execpy import ExecPy
+from tamagame import TamaGame
 
 # config.iniの読み込み設定
 conf_ini = configparser.ConfigParser()
@@ -26,13 +27,14 @@ async def write(msg):
 ## 以下クライアントの処理関数
 @client.event
 async def on_ready():
-    global console, board, tb, mocho_ch
+    global console, board, tb, tg, mocho_ch
     boardconf = conf_ini[conf_mocho["Board"]]
     BOARD_ID = int(boardconf["ID"])
     RANDOM_ID = int(boardconf["RANDOM"])
     console = client.get_channel(int(conf_mocho["Console"]))
     mocho_ch = client.get_channel(int(conf_mocho["MochoCh"]))
     tb = talkingbot.Talking(console)
+    tg = TamaGame(client)
     board = Board(client.get_channel(BOARD_ID),client.get_channel(RANDOM_ID))
     try:
         await write("Login Complete")
@@ -161,6 +163,10 @@ async def on_voice_state_update(member, before, after):
     #  チャンネル移動やミュートの解除など（ここではチャンネル移動のみ通知させている）
     befch = before.channel
     aftch = after.channel
+    if befch == tg.vc or aftch == tg.vc:
+        # Call TamaGame
+        await tg.member_change()
+
     send = False
     if befch == None:
         if aftch.category_id == vc_category:

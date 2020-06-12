@@ -2,7 +2,9 @@ __pycache__/
 config.ini
 *.tb
 *.out
+*.png
 programs/
 case/
 !main.tb
 sing/
+
