@@ -64,5 +64,5 @@ class TamaGame:
 
     def record(self):
         with open("pickles/tamagame.pickle", "wb") as f:
-            pickle.dump([self.talking_num, self.talkstart, self.sendpng], f)
+            pickle.dump(list([self.talking_num, self.talkstart, self.sendpng]), f)
 

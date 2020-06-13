@@ -4,6 +4,7 @@ config.ini
 *.out
 *.png
 programs/
+pickles/
 case/
 !main.tb
 sing/
