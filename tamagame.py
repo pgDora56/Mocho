@@ -1,7 +1,8 @@
 # coding=utf-8
 import configparser
-import time
 import discord
+import pickle
+import time
 
 # config.iniの読み込み設定
 conf_ini = configparser.ConfigParser()
@@ -16,9 +17,17 @@ class TamaGame:
     def __init__(self, client):
         self.zatsudan = client.get_channel(tg_zatsu_id)
         self.vc = client.get_channel(tg_zatsu_id + 1)
-        self.talking_num = len(self.vc.members)
-        self.talkstart = -1
-        self.sendpng = None
+        try:
+            with open("pickles/tamagame.pickle", "rb") as f:
+                lis = pickle.load(f)
+            self.talking_num = lis[0]
+            self.talkstart = lis[1]
+            self.sendpng = lis[2]
+            self.member_change()
+        except: 
+            self.talking_num = len(self.vc.members)
+            self.talkstart = -1
+            self.sendpng = None
 
     async def chat(self, msg):
         await self.zatsudan.send(msg)
@@ -51,7 +60,9 @@ class TamaGame:
             self.sendpng = None
 
         self.talking_num = newnum
+        self.record()
 
-
-
+    def record(self):
+        with open("pickles/tamagame.pickle", "wb") as f:
+            pickle.dump([self.talking_num, self.talkstart, self.sendpng], f)
 
