@@ -23,7 +23,7 @@ class ExecPy:
 
         else:
             try:
-                res = subprocess.check_output(["python3", f"programs/{filename}.py"])
+                res = subprocess.check_output(["timeout", "5", "python3", f"programs/{filename}.py"])
                 print(res.decode("utf-8"))
             except Exception as ex:
                 print("Execution error:", ex)
