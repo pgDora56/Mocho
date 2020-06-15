@@ -52,7 +52,7 @@ class TamaGame:
                 sec = sec % 60
                 h = m // 60
                 m = m % 60
-                time_str = f"{h}時間" if h > 0 else ""
+                time_str = f"{int(h)}時間" if h > 0 else ""
                 time_str += f"{int(m)}分{int(sec)}秒"
                 await self.chat(f"お疲れ様！{time_str}喋ってたよ！(o・∇・o)")
                 self.talkstart = -1
