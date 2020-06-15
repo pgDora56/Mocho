@@ -1,9 +1,16 @@
 # coding=utf-8
-import configparser, discord, sys, random, time, re, asyncio
+import asyncio
+import configparser
+from copy import deepcopy
+import discord
+import random 
+import re
+import sys
+import time
 from threading import Timer
+
 from board_tools import Board, WhiteBoard
 import talkingbot
-from copy import deepcopy
 from execpy import ExecPy
 from tamagame import TamaGame
 

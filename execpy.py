@@ -1,9 +1,12 @@
 # coding=utf-8
-import sys, io, subprocess, os, shutil, glob
-from timeout_decorator import timeout, TimeoutError
+import glob
+import io
+import os
+import shutil
+import subprocess
+import sys
 
 class ExecPy:
-    @timeout(5)
     def execute_py(self, code, filename="program", case=False):
         if code != "":
             with open(f"programs/{filename}.py", mode="w", encoding="utf-8") as f:
