@@ -16,7 +16,7 @@ class ExecPy:
                 print(f"[{c}]")
                 try:
                     testdata = subprocess.Popen(["cat", c], stdout=subprocess.PIPE)
-                    python = subprocess.Popen(["python3", f"programs/{filename}.py"], stdin=testdata.stdout, stdout=subprocess.PIPE)
+                    python = subprocess.Popen(["timeout", "5", "python3", f"programs/{filename}.py"], stdin=testdata.stdout, stdout=subprocess.PIPE)
                     print(python.stdout.peek().decode("utf-8"))
                 except Exception as ex:
                     print("Execution error:", ex)
