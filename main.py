@@ -1,5 +1,4 @@
 # coding=utf-8
-import asyncio
 import configparser
 from copy import deepcopy
 import discord
@@ -10,8 +9,9 @@ import time
 from threading import Timer
 
 from board_tools import Board, WhiteBoard
-import talkingbot
 from execpy import ExecPy
+from join_notify import JoinNotify
+import talkingbox
 from tamagame import TamaGame
 
 # config.iniの読み込み設定
@@ -22,8 +22,6 @@ if conf_ini == None:
     exit()
 conf_mocho = conf_ini["Mocho"]
 accept_ch = list(map(int, conf_mocho["AcceptCh"].split(",")))
-vc_category = int(conf_mocho["VCCategory"])
-
 client = discord.Client()
 
 async def write(msg):
@@ -31,16 +29,21 @@ async def write(msg):
     print(msg)
     if console != None: await console.send(msg)
 
-## 以下クライアントの処理関数
 @client.event
 async def on_ready():
-    global console, board, tb, tg, mocho_ch
+    global console, board, tb, tg, join_notify_list
     boardconf = conf_ini[conf_mocho["Board"]]
     BOARD_ID = int(boardconf["ID"])
     RANDOM_ID = int(boardconf["RANDOM"])
+
+    join_notify_pair_list = conf_mocho["JoinNotification"].split("|")
+    join_notify_list = []
+    for notify_pair in join_notify_pair_list:
+        watch_category, notify_ch = map(int, notify_pair.split(","))
+        join_notify_list.append(JoinNotify(watch_category, client.get_channel(notify_ch)))
+
     console = client.get_channel(int(conf_mocho["Console"]))
-    mocho_ch = client.get_channel(int(conf_mocho["MochoCh"]))
-    tb = talkingbot.Talking(console)
+    tb = talkingbox.TalkingBox(console)
     tg = TamaGame(client)
     board = Board(client.get_channel(BOARD_ID),client.get_channel(RANDOM_ID))
     try:
@@ -174,24 +177,8 @@ async def on_voice_state_update(member, before, after):
         # Call TamaGame
         await tg.member_change()
 
-    send = False
-    if befch == None:
-        if aftch.category_id == vc_category:
-            msg = await mocho_ch.send(f"{member.display_name}が `{aftch}` に入室したよ(o・∇・o)")
-            send = True
-    elif aftch == None:
-        if befch.category_id == vc_category:
-            msg = await mocho_ch.send(f"{member.display_name}が `{befch}` から退出したよ(o・∇・o)")
-            send = True
-    elif befch != aftch:
-        if before.channel.category_id == vc_category or after.channel.category_id == vc_category:
-            msg = await mocho_ch.send(f"{member.display_name}が `{befch}` から `{aftch}` に移動したよ(o・∇・o)")
-            send = True
-
-    if send:
-        await asyncio.sleep(180)
-        await msg.delete()
-        
+    for join_notify in join_notify_list:
+        await join_notify.check(member, befch, aftch)
 
 token = conf_ini.get("Mocho", "Token")
 client.run(token)

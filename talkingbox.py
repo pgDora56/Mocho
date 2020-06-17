@@ -1,5 +1,6 @@
 import random
-class Talking:
+
+class TalkingBox:
     next_only_word = []
     def __init__(self, errorch):
         self.error_notify_channel = errorch # コンソール用のチャンネルを設定
@@ -48,7 +49,10 @@ class Talking:
                         newfilelines = f.readlines()
                     filelines = newfilelines + filelines
                 except:
-                    await self.error_notify_channel.send(f"Error call TalkingBotFile:{filename}")
+                    await self.error_notify_channel.send(f"Error call TalkingBoxFile:{filename}")
+                continue
+            if line.startswith("//"):
+                # //から始まる場合はコメント行として無視する
                 continue
             if chatflag:
                 # そのセクションの単語を拾い、最後まで拾ったらその中からrandomで送信
