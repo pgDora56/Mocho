@@ -1,5 +1,6 @@
 __pycache__/
 config.ini
+config.json
 *.tb
 *.out
 *.png
@@ -9,3 +10,4 @@ case/
 !main.tb
 sing/
 sing_go_mugen.py
+test.py

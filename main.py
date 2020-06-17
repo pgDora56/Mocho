@@ -1,7 +1,7 @@
 # coding=utf-8
-import configparser
 from copy import deepcopy
 import discord
+import json
 import random 
 import re
 import sys
@@ -14,15 +14,11 @@ from join_notify import JoinNotify
 import talkingbox
 from tamagame import TamaGame
 
-# config.iniの読み込み設定
-conf_ini = configparser.ConfigParser()
-conf_ini.read('config.ini', encoding='utf-8')
-if conf_ini == None:
-    print("Not found 'config.ini'")
-    exit()
-conf_mocho = conf_ini["Mocho"]
-accept_ch = list(map(int, conf_mocho["AcceptCh"].split(",")))
+# config.jsonの読み込み
+with open("config.json", "r") as f:
+    conf = json.load(f)
 client = discord.Client()
+
 
 async def write(msg):
     global console
@@ -32,17 +28,17 @@ async def write(msg):
 @client.event
 async def on_ready():
     global console, board, tb, tg, join_notify_list
-    boardconf = conf_ini[conf_mocho["Board"]]
-    BOARD_ID = int(boardconf["ID"])
-    RANDOM_ID = int(boardconf["RANDOM"])
+    boardconf = conf["board_code"][conf["board"]]
+    BOARD_ID = int(boardconf["id"])
+    RANDOM_ID = int(boardconf["random"])
 
-    join_notify_pair_list = conf_mocho["JoinNotification"].split("|")
+    join_notify_pair_list = conf["join_notify"]
     join_notify_list = []
     for notify_pair in join_notify_pair_list:
-        watch_category, notify_ch = map(int, notify_pair.split(","))
+        watch_category, notify_ch = notify_pair
         join_notify_list.append(JoinNotify(watch_category, client.get_channel(notify_ch)))
 
-    console = client.get_channel(int(conf_mocho["Console"]))
+    console = client.get_channel(conf["console"])
     tb = talkingbox.TalkingBox(console)
     tg = TamaGame(client)
     board = Board(client.get_channel(BOARD_ID),client.get_channel(RANDOM_ID))
@@ -92,7 +88,7 @@ async def on_message(message):
             await write("Logout Complete")
         return
 
-    if not (str(message.channel) in ["もちょ"] or str(message.channel).startswith("Direct Message") or message.channel.id in accept_ch):
+    if not (str(message.channel) in ["もちょ"] or str(message.channel).startswith("Direct Message") or message.channel.id in conf["acceptch"]):
         # 許可されたチャンネル以外は全てDeny
         await write(f"Message Received in {message.channel} by {message.author} in {message.channel.id} -> Deny")
         return
@@ -180,5 +176,5 @@ async def on_voice_state_update(member, before, after):
     for join_notify in join_notify_list:
         await join_notify.check(member, befch, aftch)
 
-token = conf_ini.get("Mocho", "Token")
+token = conf["token"]
 client.run(token)
