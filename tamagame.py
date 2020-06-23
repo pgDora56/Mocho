@@ -1,16 +1,13 @@
 # coding=utf-8
 import configparser
 import discord
+import json
 import pickle
 import time
 
-# config.iniの読み込み設定
-conf_ini = configparser.ConfigParser()
-conf_ini.read('config.ini', encoding='utf-8')
-if conf_ini == None:
-    print("Not found 'config.ini'")
-    exit()
-tg_zatsu_id = int(conf_ini["TamaGame"]["ZATSUDAN"])
+with open("config.json", "r") as f:
+    conf = json.load(f)
+tg_zatsu_id = conf["tamagame"]
 
 
 class TamaGame:
