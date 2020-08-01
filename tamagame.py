@@ -30,7 +30,7 @@ class TamaGame:
         await self.zatsudan.send(msg)
 
     async def member_change(self):
-        newnum = len(self.vc.members)
+        newnum = get_vc_members()
         if self.talking_num == newnum:
             return
         if self.talking_num == 0 and newnum == 1:
@@ -58,6 +58,14 @@ class TamaGame:
 
         self.talking_num = newnum
         self.record()
+
+    def get_vc_members(self):
+        human_user_cnt = 0
+        for m in self.vc.members:
+            if not m.bot: human_user_cnt += 1
+        print(f"Human: {human_user_cnt}")
+        return human_user_cnt
+
 
     def record(self):
         with open("pickles/tamagame.pickle", "wb") as f:
