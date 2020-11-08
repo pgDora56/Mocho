@@ -11,3 +11,5 @@ case/
 sing/
 sing_go_mugen.py
 test.py
+*.mp3
+

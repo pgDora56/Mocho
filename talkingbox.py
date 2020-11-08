@@ -1,13 +1,15 @@
 import random
 
+
 class TalkingBox:
     next_only_word = []
+
     def __init__(self, errorch):
-        self.error_notify_channel = errorch # コンソール用のチャンネルを設定
+        self.error_notify_channel = errorch  # コンソール用のチャンネルを設定
 
     def append_line(self, filename, line):
         # ファイルに１行追加
-        with open(filename, mode = "a", encoding = "utf-8") as f:
+        with open(filename, mode="a", encoding="utf-8") as f:
             f.write(f"\n{line}")
 
     async def seed_reply(self, channel, seed, word_list, fmt="%word%"):
@@ -20,7 +22,7 @@ class TalkingBox:
         await channel.send(msg)
         random.seed()
 
-    async def reply(self, channel, msg): 
+    async def reply(self, channel, msg):
         # next_only_wordに該当する単語であれば、それを反応させて終了
         for word in self.next_only_word:
             if msg == word[0]:

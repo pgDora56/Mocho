@@ -1,5 +1,4 @@
 # coding=utf-8
-import configparser
 import discord
 import json
 import pickle
@@ -20,8 +19,8 @@ class TamaGame:
             self.talking_num = lis[0]
             self.talkstart = lis[1]
             self.sendpng = lis[2]
-            self.member_change()
-        except: 
+            # await self.member_change()
+        except:
             self.talking_num = len(self.vc.members)
             self.talkstart = -1
             self.sendpng = None
@@ -30,7 +29,7 @@ class TamaGame:
         await self.zatsudan.send(msg)
 
     async def member_change(self):
-        newnum = get_vc_members()
+        newnum = self.get_vc_members()
         if self.talking_num == newnum:
             return
         if self.talking_num == 0 and newnum == 1:

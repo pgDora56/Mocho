@@ -1,17 +1,11 @@
-# coding=utf-8
-from copy import deepcopy
 import discord
 import json
-import random 
-import re
-import sys
-import time
-from threading import Timer
 
-from board_tools import Board, WhiteBoard
+from board_tools import Board
 from execpy import ExecPy
 from join_notify import JoinNotify
 import talkingbox
+import markov
 from tamagame import TamaGame
 
 # config.jsonの読み込み
@@ -23,7 +17,9 @@ client = discord.Client()
 async def write(msg):
     global console
     print(msg)
-    if console != None: await console.send(msg)
+    if console is not None:
+        await console.send(msg)
+
 
 @client.event
 async def on_ready():
@@ -36,29 +32,31 @@ async def on_ready():
     join_notify_list = []
     for notify_pair in join_notify_pair_list:
         watch_category, notify_ch = notify_pair
-        join_notify_list.append(JoinNotify(watch_category, client.get_channel(notify_ch)))
+        join_notify_list.append(
+            JoinNotify(watch_category, client.get_channel(notify_ch))
+        )
 
     console = client.get_channel(conf["console"])
     tb = talkingbox.TalkingBox(console)
     tg = TamaGame(client)
-    board = Board(client.get_channel(BOARD_ID),client.get_channel(RANDOM_ID))
+    board = Board(client.get_channel(BOARD_ID), client.get_channel(RANDOM_ID))
     try:
         await write("Login Complete")
         await write("Success to connect console")
     except Exception as e:
         await write(f"Error: {str(e)}")
 
+
 @client.event
 async def on_message(message):
     # メッセージの受信時に呼び出される
-
     global client, board, tb
-    msg = message.content # メッセージの内容
-    if message.author.bot: # メッセージを送っているのがbotなら何もしない
+    msg = message.content  # メッセージの内容
+    if message.author.bot:  # メッセージを送っているのがbotなら何もしない
         if message.author.id == 712672371596591116 and msg.startswith("あやね"):
             await message.channel.send("あやねる～～もちょだよ～～～(o・∇・o)")
         return
-    if message.channel == board.channel: 
+    if message.channel == board.channel:
         # ボードに来たのは全部消す
         await message.delete()
         return
@@ -70,14 +68,14 @@ async def on_message(message):
                 fname, sentences = msg[4:].split("|")
                 tb.append_line(fname, sentences)
                 await write(f"Success append line to {fname}")
-            except:
+            except Exception:
                 await write(f"Error: {msg}")
         elif msg[0] == "@":
             try:
                 trigger, word = msg[1:].split("|")
                 tb.next_only_word.append((trigger, word))
                 await write(f"Next '{trigger}' => {word}")
-            except:
+            except Exception:
                 await write(f"Error: {msg}")
 
         await message.delete()
@@ -88,20 +86,42 @@ async def on_message(message):
             await write("Logout Complete")
         return
 
-    if not (str(message.channel) in ["もちょ"] or str(message.channel).startswith("Direct Message") or message.channel.id in conf["acceptch"]):
+    if not (str(message.channel) in ["もちょ"] or
+            str(message.channel).startswith("Direct Message") or
+            message.channel.id in conf["acceptch"]):
         # 許可されたチャンネル以外は全てDeny
-        await write(f"Message Received in {message.channel} by {message.author} in {message.channel.id} -> Deny")
+        await write(f"Message Received in {message.channel} " +
+                    f"by {message.author} " +
+                    f"in {message.channel.id} -> Deny")
         return
 
+    await write(f"Message Received in {message.channel} " +
+                f"by {message.author} " +
+                f"in {message.channel.id}")  # 受信
 
-
-    await write(f"Message Received in {message.channel} by {message.author} in {message.channel.id}") # 受信
-
-    if not(board.is_owner(message.channel) or board.is_joiner(message.channel)):
+    if not(board.is_owner(message.channel) or
+           board.is_joiner(message.channel)):
         # Board参加者の個チャ以外はトーキングボットを反応させる
-        if msg.startswith("もちょ、") and msg.endswith("は好き？"):
+        if msg.startswith("もちょ、") and \
+                msg.endswith("は好き？"):
             word = msg[4:-4]
-            await tb.seed_reply(message.channel, word, [("すきだよ～！！(o・∇・o)", 70), ("かぁ、普通かな(o・∇・o)",20), ("はちょっと苦手かな～(o・∇・o)",7), ("、ぜったいゆるせへん、あたいゆるせへん",3)], "%seed%%word%")
+            await tb.seed_reply(message.channel, word, [
+                ("すきだよ～！！(o・∇・o)", 70),
+                ("かぁ、普通かな(o・∇・o)", 20),
+                ("はちょっと苦手かな～(o・∇・o)", 7),
+                ("、ぜったいゆるせへん、あたいゆるせへん", 3)
+            ], "%seed%%word%")
+        elif msg.startswith("fakesing"):
+            command = msg.split("-")
+            get_items = 1
+            if len(command) > 1:
+                if command[1].isdigit():
+                    n = int(command[1])
+                    if n > 20:
+                        get_items = 20
+                    elif n > 0:
+                        get_items = n
+            await message.channel.send(markov.get_markov("sing.tb", get_items))
         else:
             e = ExecPy()
             if(not await e.execution(message)):
@@ -112,15 +132,15 @@ async def on_message(message):
 
     elif str(message.channel).startswith("Direct Message"):
         # ダイレクトメッセージの処理
-        if msg =="get board owner":
+        if msg == "get board owner":
             if message.channel in board.joiner:
-                await message.channel.send(f"あなたは現在参加者です。オーナーになるためには `board exit` で一旦参加者から抜けてください。")
-            elif board.owner != None:
+                await message.channel.send("あなたは現在参加者です。オーナーになるためには `board exit` で一旦参加者から抜けてください。")
+            elif board.owner is not None:
                 await message.channel.send(f"現在のボードオーナーは{str(board.owner)[20:]}になっています。 `release board owner` で本人にリリースをお願いするか、Doraまでご連絡ください。")
             else:
                 board.owner = message.channel
                 await write(f"Set board owner: {str(board.owner)}")
-                await message.channel.send(f"ボードオーナーになりました。オーナーを離れるときは `release board owner` と送ってください。")
+                await message.channel.send("ボードオーナーになりました。オーナーを離れるときは `release board owner` と送ってください。")
                 if len(board.joiner) == 0:
                     await message.channel.send("現在の参加者はいません")
                 else:
@@ -129,10 +149,9 @@ async def on_message(message):
             if board.owner == message.channel:
                 board.owner = None
                 await write(f"Release board owner: {str(board.owner)}")
-                await message.channel.send(f"ボードオーナーを離れました。")
+                await message.channel.send("ボードオーナーを離れました。")
             else:
-                await message.channel.send(f"あなたはボードオーナーではありません。")
-        
+                await message.channel.send("あなたはボードオーナーではありません。")
         elif msg == "board join":
             await board.join(message.channel)
         elif msg == "board exit":
@@ -156,12 +175,13 @@ async def on_message(message):
                 try:
                     pl, sc = msg.split("=")
                     board.joiner[int(pl)].score = int(sc)
-                    await message.channel.send(f"Scoreを変更しました")
+                    await message.channel.send("Scoreを変更しました")
                     await board.send_rank(board.owner)
                 except Exception as ex:
                     await message.channel.send(f"Scoreの変更に失敗しました：{str(ex)}")
         elif board.is_joiner(message.channel):
             await board.joiner_write(message.channel, msg)
+
 
 @client.event
 async def on_voice_state_update(member, before, after):
