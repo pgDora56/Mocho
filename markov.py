@@ -2,7 +2,8 @@
 import MeCab
 import re
 import random
-import json
+import pickle
+import time
 
 
 class Word:
@@ -52,12 +53,12 @@ class Word:
             cnt = val.write(cnt+1)
         return cnt
 
-    def json_format(self):
+    def dic_format(self):
         dic = {}
         dic["count"] = self.count
         dic["children"] = {}
         for k, v in self.nexts.items():
-            dic[k] = self.nexts[k].json_format()
+            dic[k] = self.nexts[k].dic_format()
         return dic
 
 
@@ -100,17 +101,98 @@ class MarkovTree:
     def write(self):
         self.root.write(0)
 
-    def json_format(self):
-        return self.root.json_format()
+    def dic_format(self):
+        return self.root.dic_format()
+
+
+def pickle_markov_tree(data):
+    """Create and pickle markov tree
+
+    Parameters
+    ----------
+    data: string
+        Data file path
+
+    Returns
+    -------
+    bool
+        Is pickling success
+    """
+
+    try:
+        tree = MarkovTree()
+        with open(data) as f:
+            sentencelist = f.read().split("\n")
+        tree.create(sentencelist)
+
+        with open(data+".pickle", "wb") as buf:
+            pickle.dump(tree, buf)
+        return True
+    except Exception:
+        return False
+
+
+def get_from_pickle(data, num=1):
+    """Make sentences from pickle file
+
+    Parameters
+    ----------
+    data: string
+        Pickle file path
+    num: int
+        Number of returned sentences
+
+
+    Returns
+    -------
+    string
+        Line Separated Generation Results
+    """
+
+    with open(data, "rb") as buf:
+        tree = pickle.load(buf)
+
+    results = []
+    for _ in range(num):
+        lis = []
+
+        fst = "[START]"
+        # tree.root.nexts[fst].show()
+        snd = tree.root.nexts[fst].pick()
+        lis.append(snd)
+
+        while snd != "[END]":
+            newsnd = tree.root.nexts[fst].nexts[snd].pick()
+            lis.append(newsnd)
+            fst = snd
+            snd = newsnd
+        lis.pop()
+
+        results.append("".join(lis))
+    return "\n".join(results)
 
 
 def get_markov(data, num=1):
+    """[Legacy] Make sentences from data file
+
+    Parameters
+    ----------
+    data: string
+        Data file path
+    num: int
+        Number of returned sentences
+
+
+    Returns
+    -------
+    string
+        Line Separated Generation Results
+    """
     tree = MarkovTree()
     with open(data) as f:
         sentencelist = f.read().split("\n")
     tree.create(sentencelist)
-    tree.write()
-    print(json.dumps(tree.json_format(), ensure_ascii=False))
+    # tree.write()
 
     results = []
     for _ in range(num):
@@ -133,4 +215,12 @@ def get_markov(data, num=1):
 
 
 if __name__ == "__main__":
+    start = time.time()
     print(get_markov("sing.tb", 20))
+    print(f"Legacy Time: {time.time()-start}")
+    start = time.time()
+    pickle_markov_tree("sing.tb")
+    print(f"Pickle time: {time.time()-start}")
+    start = time.time()
+    print(get_from_pickle("sing.tb.pickle", 20))
+    print(f"Alt. Time: {time.time()-start}")
