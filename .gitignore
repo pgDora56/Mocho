@@ -4,6 +4,7 @@ config.json
 *.tb
 *.out
 *.png
+*.mp3
 programs/
 pickles/
 case/
@@ -11,3 +12,5 @@ case/
 sing/
 sing_go_mugen.py
 test.py
+mocho/
+.gitignore
