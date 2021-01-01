@@ -21,7 +21,7 @@ class JoinNotify:
                     aftch.category_id == self.watch_category:
                 msg = await self.notify_ch.send(
                     f"{member.display_name}が "
-                    "`{befch}` から `{aftch}` に移動したよ(o・∇・o)")
+                    f"`{befch}` から `{aftch}` に移動したよ(o・∇・o)")
         if msg is None:
             return
 
