@@ -2,7 +2,6 @@
 import MeCab
 import re
 import random
-import json
 
 
 class Word:
@@ -52,14 +51,6 @@ class Word:
             cnt = val.write(cnt+1)
         return cnt
 
-    def json_format(self):
-        dic = {}
-        dic["count"] = self.count
-        dic["children"] = {}
-        for k, v in self.nexts.items():
-            dic[k] = self.nexts[k].json_format()
-        return dic
-
 
 class MarkovTree:
     def __init__(self, maxi=3):
@@ -78,8 +69,8 @@ class MarkovTree:
             self.root.add(words_list[i:])
 
     def separate(self, data):
-        # mecab = MeCab.Tagger("-d /opt/mecab/lib/mecab/dic/neologd")
-        mecab = MeCab.Tagger()
+        mecab = MeCab.Tagger("-d /opt/mecab/lib/mecab/dic/neologd")
+        # mecab = MeCab.Tagger()
         mecab.parse("")
         m = mecab.parse(data)
         lines = m.split("\n")
@@ -100,17 +91,13 @@ class MarkovTree:
     def write(self):
         self.root.write(0)
 
-    def json_format(self):
-        return self.root.json_format()
 
-
-def get_markov(data, num=1):
+def get_markovsing(num=1):
     tree = MarkovTree()
-    with open(data) as f:
+    with open("sing.tb") as f:
         sentencelist = f.read().split("\n")
     tree.create(sentencelist)
     tree.write()
-    print(json.dumps(tree.json_format(), ensure_ascii=False))
 
     results = []
     for _ in range(num):
@@ -133,4 +120,4 @@ def get_markov(data, num=1):
 
 
 if __name__ == "__main__":
-    print(get_markov("sing.tb", 20))
+    print(get_markovsing(20))
