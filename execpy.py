@@ -7,10 +7,10 @@ import subprocess
 import sys
 
 class ExecPy:
-    def execute_py(self, code, filename="program", case=False):
+    def execute_py(self, author, code, filename="program", case=False):
         if code != "":
             with open(f"programs/{filename}.py", mode="w", encoding="utf-8") as f:
-                f.write(code)
+                f.write(f"# Created by {author}\n" + code)
         if case:
             for c in glob.glob("case/*"):
                 print(f"[{c}]")
@@ -20,7 +20,6 @@ class ExecPy:
                     print(python.stdout.peek().decode("utf-8"))
                 except Exception as ex:
                     print("Execution error:", ex)
-
         else:
             try:
                 res = subprocess.check_output(["timeout", "5", "python3", f"programs/{filename}.py"])
@@ -78,7 +77,7 @@ class ExecPy:
                         sys.stdout = f
 
                         try:
-                            self.execute_py(code, filename, case)
+                            self.execute_py(message.author.name, code, filename, case)
                         except TimeoutError as e:
                             print(f"Timeout")
                         except Exception as e:
@@ -95,14 +94,23 @@ class ExecPy:
             commands = lines[0].split()
             print(commands)
             if commands[0] in ["py", "python"] and len(commands) > 1:
-                if os.path.exists(f"programs/{commands[1]}.py"):
+                if commands[1] == "watch" and len(commands) > 2:
+                    try:
+                        with open(f"programs/{commands[2]}.py") as f:
+                            text = f"```py\n{f.read()}\n```"
+                        await message.channel.send(text)
+                        return True
+                    except Exception as e:
+                        await message.channel.send(str(e))
+                        return False
+                elif os.path.exists(f"programs/{commands[1]}.py"):
                     with io.StringIO() as f:
 
                         # 標準出力を f に切り替える。
                         sys.stdout = f
 
                         try:
-                            self.execute_py("", commands[1])
+                            self.execute_py(message.author.name, "", commands[1])
                         except TimeoutError as e:
                             print(f"Timeout")
                         except Exception as e:

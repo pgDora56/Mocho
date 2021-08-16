@@ -7,6 +7,7 @@ from join_notify import JoinNotify
 import talkingbox
 import markov
 from tamagame import TamaGame
+from openroom import NagayaOpener
 
 # config.jsonの読み込み
 with open("config.json", "r") as f:
@@ -122,6 +123,26 @@ async def on_message(message):
                     elif n > 0:
                         get_items = n
             await message.channel.send(markov.get_markov("sing.tb", get_items))
+        elif msg.startswith("nopen"):
+            command = msg.split()
+            print(command)
+            if len(command) == 3:
+                if 0 < len(command[1]) <= 10 and \
+                        0 < len(command[2]) <= 10:
+                    try:
+                        no = NagayaOpener.openroom(command[1], command[2])
+                        if no is None:
+                            return
+                        announce = "部屋を開きました。\n\n" + \
+                            f"Nagaya Quiz Arena2 Room{no} {command[1]}\n" + \
+                            f"パスワードは {command[2]} です。\n" + \
+                            f"出題者: https://powami.herokuapp.com/nqa2/room{no}/provider\n" + \
+                            f"解答者: https://powami.herokuapp.com/nqa2/room{no}/player"
+                        await message.channel.send(announce)
+                        await write(f"Open room{no}\nName:{command[1]}\nPW:{command[2]}")
+                    except Exception as e:
+                        await write("Roomopen Error:" + str(e))
+
         else:
             e = ExecPy()
             if(not await e.execution(message)):
