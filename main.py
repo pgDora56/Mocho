@@ -8,6 +8,7 @@ import talkingbox
 import markov
 from tamagame import TamaGame
 from openroom import NagayaOpener
+from trans import TransMocho
 
 # config.jsonの読み込み
 with open("config.json", "r") as f:
@@ -24,7 +25,7 @@ async def write(msg):
 
 @client.event
 async def on_ready():
-    global console, board, tb, tg, join_notify_list
+    global console, board, tb, tg, join_notify_list, trmco
     boardconf = conf["board_code"][conf["board"]]
     BOARD_ID = int(boardconf["id"])
     RANDOM_ID = int(boardconf["random"])
@@ -40,6 +41,7 @@ async def on_ready():
     console = client.get_channel(conf["console"])
     tb = talkingbox.TalkingBox(console)
     tg = TamaGame(client)
+    trmco = TransMocho(conf["deepl_token"])
     board = Board(client.get_channel(BOARD_ID), client.get_channel(RANDOM_ID))
     try:
         await write("Login Complete")
@@ -51,7 +53,7 @@ async def on_ready():
 @client.event
 async def on_message(message):
     # メッセージの受信時に呼び出される
-    global client, board, tb
+    global client, board, tb, trmco
     msg = message.content  # メッセージの内容
     if message.author.bot:  # メッセージを送っているのがbotなら何もしない
         if message.author.id == 712672371596591116 and msg.startswith("あやね"):
@@ -103,15 +105,42 @@ async def on_message(message):
     if not(board.is_owner(message.channel) or
            board.is_joiner(message.channel)):
         # Board参加者の個チャ以外はトーキングボットを反応させる
-        if msg.startswith("もちょ、") and \
-                msg.endswith("は好き？"):
-            word = msg[4:-4]
-            await tb.seed_reply(message.channel, word, [
-                ("すきだよ～！！(o・∇・o)", 70),
-                ("かぁ、普通かな(o・∇・o)", 20),
-                ("はちょっと苦手かな～(o・∇・o)", 7),
-                ("、ぜったいゆるせへん、あたいゆるせへん", 3)
-            ], "%seed%%word%")
+        if msg.startswith("もちょ、"):
+            if msg.endswith("は好き？"):
+                word = msg[4:-4]
+                await tb.seed_reply(message.channel, word, [
+                    ("すきだよ～！！(o・∇・o)", 70),
+                    ("かぁ、普通かな(o・∇・o)", 20),
+                    ("はちょっと苦手かな～(o・∇・o)", 7),
+                    ("、ぜったいゆるせへん、あたいゆるせへん", 3)
+                ], "%seed%%word%")
+                return
+            elif msg.endswith("で何？"):
+                # ex:もちょ、イージオスはマレーシア語で何？
+                text_lang = msg[4:-3]
+                lang = ""
+                text = ""
+                for i in range(len(text_lang)-1, -1, -1):
+                    if text_lang[i] == "は":
+                        text = text_lang[:i]
+                        break
+                    lang = text_lang[i] + lang
+                if text != "" and lang != "":
+                    await trmco.mocho_response(lang, text)
+                    return
+            elif msg.endswith("は何？"):
+                # ex:もちょ、マレーシア語でイージオスは何？
+                text_lang = msg[4:-3]
+                lang = ""
+                text = ""
+                for i in range(len(text_lang)):
+                    if text_lang[i] == "で":
+                        text = text_lang[i+1:]
+                        break
+                    lang += text_lang[i]
+                if text != "" and lang != "":
+                    await trmco.mocho_response(lang, text)
+                    return
         elif msg.startswith("fakesing"):
             command = msg.split("-")
             get_items = 1
