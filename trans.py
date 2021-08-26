@@ -117,7 +117,7 @@ class TransMocho:
             return ""
 
         json_resp = json.loads(response.text) 
-        return json_resp["translations"]["text"] 
+        return json_resp["translations"][0]["text"] 
     
     def mocho_response(self, lang, text):
         res = self.apisend(lang, text)

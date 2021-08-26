@@ -126,7 +126,7 @@ async def on_message(message):
                         break
                     lang = text_lang[i] + lang
                 if text != "" and lang != "":
-                    await trmco.mocho_response(lang, text)
+                    await message.channel.send(trmco.mocho_response(lang, text))
                     return
             elif msg.endswith("は何？"):
                 # ex:もちょ、マレーシア語でイージオスは何？
@@ -139,7 +139,7 @@ async def on_message(message):
                         break
                     lang += text_lang[i]
                 if text != "" and lang != "":
-                    await trmco.mocho_response(lang, text)
+                    await message.channel.send(trmco.mocho_response(lang, text))
                     return
         elif msg.startswith("fakesing"):
             command = msg.split("-")
