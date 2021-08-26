@@ -5,12 +5,14 @@ import os
 import shutil
 import subprocess
 import sys
+import datetime
 
 class ExecPy:
     def execute_py(self, author, code, filename="program", case=False):
         if code != "":
+            dt_now = datetime.datetime.now()
             with open(f"programs/{filename}.py", mode="w", encoding="utf-8") as f:
-                f.write(f"# Created by {author}\n" + code)
+                f.write(f"# Created by {author} at {dt_now.strftime('%Y-%m-%d %H:%M:%S')}\n" + code)
         if case:
             for c in glob.glob("case/*"):
                 print(f"[{c}]")

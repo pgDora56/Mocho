@@ -62,9 +62,10 @@ class Word:
 
 
 class MarkovTree:
-    def __init__(self, maxi=3):
+    def __init__(self, dic, maxi=3):
         self.root = Word(-1, maxi)
         self.MAXI_CHAIN = maxi
+        self.dic = dic
 
     def add_tree(self, data):
         words = ["[START]"]
@@ -78,8 +79,8 @@ class MarkovTree:
             self.root.add(words_list[i:])
 
     def separate(self, data):
-        # mecab = MeCab.Tagger("-d /opt/mecab/lib/mecab/dic/neologd")
-        mecab = MeCab.Tagger()
+        mecab = MeCab.Tagger(self.dic)
+        # mecab = MeCab.Tagger()
         mecab.parse("")
         m = mecab.parse(data)
         lines = m.split("\n")
@@ -104,8 +105,8 @@ class MarkovTree:
         return self.root.json_format()
 
 
-def get_markov(data, num=1):
-    tree = MarkovTree()
+def get_markov(dic, data, num=1):
+    tree = MarkovTree(dic)
     with open(data) as f:
         sentencelist = f.read().split("\n")
     tree.create(sentencelist)

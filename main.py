@@ -53,7 +53,7 @@ async def on_ready():
 @client.event
 async def on_message(message):
     # メッセージの受信時に呼び出される
-    global client, board, tb, trmco
+    global conf, client, board, tb, trmco
     msg = message.content  # メッセージの内容
     if message.author.bot:  # メッセージを送っているのがbotなら何もしない
         if message.author.id == 712672371596591116 and msg.startswith("あやね"):
@@ -151,7 +151,7 @@ async def on_message(message):
                         get_items = 20
                     elif n > 0:
                         get_items = n
-            await message.channel.send(markov.get_markov("sing.tb", get_items))
+            await message.channel.send(markov.get_markov(conf["mecab_dic"], "sing.tb", get_items))
         elif msg.startswith("nopen"):
             command = msg.split()
             print(command)
