@@ -165,8 +165,8 @@ async def on_message(message):
                         announce = "部屋を開きました。\n\n" + \
                             f"Nagaya Quiz Arena2 Room{no} {command[1]}\n" + \
                             f"パスワードは {command[2]} です。\n" + \
-                            f"出題者: https://powami.herokuapp.com/nqa2/room{no}/provider\n" + \
-                            f"解答者: https://powami.herokuapp.com/nqa2/room{no}/player"
+                            f"出題者: https://penpenpng.com/nqa2/room{no}/provider\n" + \
+                            f"解答者: https://penpenpng.com/nqa2/room{no}/player"
                         await message.channel.send(announce)
                         await write(f"Open room{no}\nName:{command[1]}\nPW:{command[2]}")
                     except Exception as e:

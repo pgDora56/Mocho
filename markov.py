@@ -107,6 +107,7 @@ class MarkovTree:
 
 def get_markov(dic, data, num=1):
     tree = MarkovTree(dic)
+    # tree = MarkovTree(dic, 2)
     with open(data) as f:
         sentencelist = f.read().split("\n")
     tree.create(sentencelist)
@@ -123,10 +124,13 @@ def get_markov(dic, data, num=1):
         lis.append(snd)
 
         while snd != "[END]":
+            # snd = tree.root.nexts[snd].pick()
+            # lis.append(snd)
             newsnd = tree.root.nexts[fst].nexts[snd].pick()
             lis.append(newsnd)
             fst = snd
             snd = newsnd
+
         lis.pop()
 
         results.append("".join(lis))
