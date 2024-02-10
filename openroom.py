@@ -20,7 +20,7 @@ class NagayaOpener:
             if len(roomnumbers) == 0:
                 return None
             roomno = roomnumbers.pop()
-            url = "https://powami.herokuapp.com/nqa2/api/create/room" + \
+            url = "https://penpenpng.com/nqa2/api/create/room" + \
                 roomno
             params = {
                 "name": user,
