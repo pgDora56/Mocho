@@ -14,3 +14,4 @@ sing_go_mugen.py
 test.py
 mocho/
 .gitignore
+*.log
