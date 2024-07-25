@@ -1,4 +1,6 @@
 import discord
+import random
+import string
 import json
 
 from board_tools import Board
@@ -155,6 +157,9 @@ async def on_message(message):
         elif msg.startswith("nopen"):
             command = msg.split()
             print(command)
+            if len(command) == 2:
+                randlst = [random.choice(string.ascii_letters + string.digits) for _ in range(10)]
+                command.append("".join(randlst))
             if len(command) == 3:
                 if 0 < len(command[1]) <= 10 and \
                         0 < len(command[2]) <= 10:
@@ -171,7 +176,8 @@ async def on_message(message):
                         await write(f"Open room{no}\nName:{command[1]}\nPW:{command[2]}")
                     except Exception as e:
                         await write("Roomopen Error:" + str(e))
-
+                else:
+                    await message.channel.send("部屋名とパスワードは10文字以内で指定してください。")
         else:
             e = ExecPy()
             if(not await e.execution(message)):
