@@ -4,7 +4,7 @@ import urllib
 import time
 import json
 import websocket
-import asyncio
+import threading
 try:
     import thread
 except ImportError:
@@ -44,7 +44,7 @@ class NagayaOpener:
         return roomno
 
 class YOpener:
-    async def __init__(self, roomname, pw, dchannel):
+    def __init__(self, roomname, pw, dchannel):
         websocket.enableTrace(False)
         self.tryCount = -1
         self.joinedRoom = -1
@@ -55,9 +55,7 @@ class YOpener:
         self.rooms = []
         self.message_stock = []
     
-    async def run(self):
-        await self.send_loop()
-         
+    def run(self):
         YQUI_WS_URI = "ws://yqui.net/ws"
         self.ws = websocket.WebSocketApp(YQUI_WS_URI,
             on_message = lambda ws, msg: self.on_message(ws, msg),
@@ -67,18 +65,20 @@ class YOpener:
         self.ws.run_forever()
 
     # FIXME: Discord送信がうまくいかない足掻き
-    async def send_loop(self):
-        while True:
-            if len(self.message_stock) > 0:
-                msg = self.message_stock.pop(0)
-                await self.channel.send(msg)
-            await asyncio.sleep(0.1)
+    # async def send_loop(self):
+    #     while True:
+    #         if len(self.message_stock) > 0:
+    #             msg = self.message_stock.pop(0)
+    #             await self.channel.send(msg)
+    #         await asyncio.sleep(0.1)
 
     def send_to_channel(self, msg):
         if self.channel == None:
             print("Send: " + msg)
         else:
-            self.message_stock.append(msg)
+            t = threading.Thread(target=self.channel.send, args=(msg,))
+            t.start()
+            # self.message_stock.append(msg)
     
     def on_message(self, ws, message):
         msg = json.loads(message)
