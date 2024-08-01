@@ -4,6 +4,7 @@ import urllib
 import time
 import json
 import websocket
+import asyncio
 try:
     import thread
 except ImportError:
@@ -66,7 +67,7 @@ class YOpener:
         if self.channel == None:
             print("Send: " + msg)
         else:
-            self.channel.send(msg)
+            asyncio.run(self.channel.send(msg))
 
     def on_message(self, ws, message):
         msg = json.loads(message)
