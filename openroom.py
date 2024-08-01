@@ -75,8 +75,8 @@ class YOpener:
         if "type" in msg:
             if msg["type"] == "rooms":
                 self.rooms = msg["content"]
-                if tryCount == -1:
-                    tryCount = 0
+                if self.tryCount == -1:
+                    self.tryCount = 0
                     self.try_to_create_room()
             if msg["type"] == "joined":
                 announce = "部屋を開きました。\n\n" + \
