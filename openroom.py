@@ -44,11 +44,8 @@ class NagayaOpener:
         return roomno
 
 class YOpener:
-    def __init__(self, roomname, pw, dchannel):
-        YQUI_WS_URI = "ws://yqui.net/ws"
-
+    async def __init__(self, roomname, pw, dchannel):
         websocket.enableTrace(False)
-
         self.tryCount = -1
         self.joinedRoom = -1
         self.status = "lobby"  # lobby, waiting
@@ -56,6 +53,12 @@ class YOpener:
         self.pw = pw
         self.channel = dchannel
         self.rooms = []
+        self.message_stock = []
+    
+    async def run(self):
+        await self.send_loop()
+         
+        YQUI_WS_URI = "ws://yqui.net/ws"
         self.ws = websocket.WebSocketApp(YQUI_WS_URI,
             on_message = lambda ws, msg: self.on_message(ws, msg),
             on_error   = lambda ws, msg: self.on_error(ws, msg),
@@ -63,12 +66,20 @@ class YOpener:
         self.ws.on_open = lambda ws: self.on_open(ws)
         self.ws.run_forever()
 
+    # FIXME: Discord送信がうまくいかない足掻き
+    async def send_loop(self):
+        while True:
+            if len(self.message_stock) > 0:
+                msg = self.message_stock.pop(0)
+                await self.channel.send(msg)
+            await asyncio.sleep(0.1)
+
     def send_to_channel(self, msg):
         if self.channel == None:
             print("Send: " + msg)
         else:
-            asyncio.run(self.channel.send(msg))
-
+            self.message_stock.append(msg)
+    
     def on_message(self, ws, message):
         msg = json.loads(message)
         print(msg)
