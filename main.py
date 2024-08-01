@@ -2,6 +2,7 @@ import discord
 import random
 import string
 import json
+import threading
 
 from board_tools import Board
 from execpy import ExecPy
@@ -9,7 +10,7 @@ from join_notify import JoinNotify
 import talkingbox
 import markov
 from tamagame import TamaGame
-from openroom import NagayaOpener, YOpener
+from openroom import NagayaOpener, YOpener, Sender
 from trans import TransMocho
 
 # config.jsonの読み込み
@@ -188,7 +189,12 @@ async def on_message(message):
                 if 0 < len(command[1]) <= 20 and \
                         0 < len(command[2]) <= 20:
                     try:
-                        YOpener(command[1], command[2], message.channel).run()
+                        s = Sender(message.channel)
+                        y = YOpener(command[1], command[2], s)
+                        y_thread = threading.Thread(target=y.start)
+                        y_thread.start()
+                        await s.run()
+                        y_thread.join()
                     except:
                         pass  # 握りつぶして良い
                 else:
