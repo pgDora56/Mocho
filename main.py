@@ -188,7 +188,7 @@ async def on_message(message):
                 if 0 < len(command[1]) <= 20 and \
                         0 < len(command[2]) <= 20:
                     try:
-                        YOpener(command[1], command[2], message.channel).run_forever()
+                        YOpener(command[1], command[2], message.channel)
                     except:
                         pass  # 握りつぶして良い
                 else:

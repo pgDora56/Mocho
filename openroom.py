@@ -49,6 +49,9 @@ class YOpener:
 
         websocket.enableTrace(False)
 
+        self.tryCount = -1
+        self.joinedRoom = -1
+        self.status = "lobby"  # lobby, waiting
         self.roomname = roomname
         self.pw = pw
         self.channel = dchannel
@@ -58,10 +61,7 @@ class YOpener:
             on_error   = lambda ws, msg: self.on_error(ws, msg),
             on_close   = lambda ws: self.on_close(ws))
         self.ws.on_open = lambda ws: self.on_open(ws)
-
-        self.tryCount = 0
-        self.joinedRoom = -1
-        self.status = "lobby"  # lobby, waiting
+        self.ws.run_forever()
 
     def send_to_channel(self, msg):
         if self.channel == None:
@@ -75,6 +75,9 @@ class YOpener:
         if "type" in msg:
             if msg["type"] == "rooms":
                 self.rooms = msg["content"]
+                if tryCount == -1:
+                    tryCount = 0
+                    self.try_to_create_room()
             if msg["type"] == "joined":
                 announce = "部屋を開きました。\n\n" + \
                     f"Yqui Room{msg['content']} {self.roomname}\n" + \
@@ -105,21 +108,27 @@ class YOpener:
 
     # サーバーから接続時にスレッドで起動する関数
     def run(self, *args):
-        time.sleep(5)
+        pass
+        # time.sleep(5)
+        # while True:
+        #     self.try_to_create_room()
+        #     time.sleep(30)
+    
+        # self.ws.close()
+        # print("thread terminating...")
+    
+    def try_loop(self):
         while True:
+            if self.status != "lobby":
+                return 
+            if self.tryCount > 120:
+                self.send_to_channel("Failed to open room")
+                self.ws.close()
+                return
             self.try_to_create_room()
             time.sleep(30)
     
-        self.ws.close()
-        print("thread terminating...")
-    
-    # websocketクライアント起動
-    def run_forever(self):
-        self.ws.run_forever()
-    
     def try_to_create_room(self):
-        if self.status != "lobby":
-            return None
         tryOpen = -1
         for room in self.rooms:
             if room["numUsers"] == 0:
