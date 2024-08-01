@@ -9,7 +9,7 @@ from join_notify import JoinNotify
 import talkingbox
 import markov
 from tamagame import TamaGame
-from openroom import NagayaOpener
+from openroom import NagayaOpener, YOpener
 from trans import TransMocho
 
 # config.jsonの読み込み
@@ -178,6 +178,21 @@ async def on_message(message):
                         await write("Roomopen Error:" + str(e))
                 else:
                     await message.channel.send("部屋名とパスワードは10文字以内で指定してください。")
+        elif msg.startswith("yopen"):
+            command = msg.split()
+            print(command)
+            if len(command) == 2:
+                randlst = [random.choice(string.ascii_letters + string.digits) for _ in range(10)]
+                command.append("".join(randlst))
+            if len(command) == 3:
+                if 0 < len(command[1]) <= 20 and \
+                        0 < len(command[2]) <= 20:
+                    try:
+                        YOpener(command[1], command[2], message.channel).run_forever()
+                    except:
+                        pass  # 握りつぶして良い
+                else:
+                    await message.channel.send("部屋名とパスワードは20文字以内で指定してください。")
         else:
             e = ExecPy()
             if(not await e.execution(message)):
