@@ -5,7 +5,7 @@ import time
 import json
 import websocket
 import datetime
-# import threading
+import threading
 import asyncio
 try:
     import thread
@@ -48,47 +48,65 @@ class NagayaOpener:
 class YOpener:
     def __init__(self, roomname, pw, sender):
         websocket.enableTrace(False)
-        self.tryCount = -1
-        self.joinedRoom = -1
-        self.status = "lobby"  # lobby, waiting
+        self.tryCount = 1
         self.roomname = roomname
         self.pw = pw
-        self.channel = sender 
-        self.loop = True
-        self.rooms = []
+        self.sender = sender 
     
     def start(self):
         YQUI_WS_URI = "ws://yqui.net/ws"
+        self.joinedRoom = -1
+        self.status = "lobby"  # lobby, waiting, abort
+        self.trying = False 
+        self.rooms = []
+
+        # WS Initialize
         self.ws = websocket.WebSocketApp(YQUI_WS_URI,
             on_message = self.on_message,
             on_error   = self.on_error,
             on_close   = self.on_close)
-        self.ws.on_open = lambda ws: self.on_open(ws)
+        to_thread = threading.Thread(target=self.check_timeout)
+        to_thread.start()
+        self.send_to_channel(f"Yqui Roomを開こうとしています……（{self.tryCount}回目）")
         self.ws.run_forever()
-        # wsthread = threading.Thread(self.ws.run_forever)
-        # wsthread.start()
-        # time.sleep(30)
-        # wsthread.raise_exception()
+        to_thread.join()
+        if self.status == "abort":
+            print("aborting, restart")
+            self.tryCount += 1
+            self.start()  # Retry
+        else:
+            # 完了
+            self.sender.close()
+            self.ws.close()
+    
+    def check_timeout(self):
+        print("[ct] check_timeout")
+        time.sleep(30)
+        if self.status == "lobby":
+            print("[ct] not good, timeout")
+            self.ws.close()
+            self.status = "abort"
+            return 
+        print("[ct] waiting joining user, continue")
+        return 
+
 
     def send_to_channel(self, msg):
-        if self.channel == None:
+        if self.sender == None:
             print("Log: " + msg)
         else:
-            self.channel.send(msg)
+            self.sender.send(msg)
     
     def on_message(self, ws, message):
         msg = json.loads(message)
         if "type" in msg:
-            # print(msg["type"])
+            print("[recv] "+msg["type"])
             if msg["type"] == "rooms":
                 self.rooms = msg["content"]
-                if self.tryCount == -1:
-                    self.tryCount = 0
-                    success = self.try_to_create_room()
-                    # 以下はリトライ機能実装前の一時的なコード
-                    if not success:
-                        self.ws.close()
-                        self.channel.close()
+                if self.trying:
+                    return
+                self.trying = True
+                self.try_to_create_room()
             if msg["type"] == "joined":
                 announce = "部屋を開きました。\n\n" + \
                     f"Yqui Room{msg['content']} {self.roomname}\n" + \
@@ -97,7 +115,7 @@ class YOpener:
                 self.send_to_channel(announce)
                 self.joinedRoom = int(msg["content"]) - 1
                 self.status = "waiting"
-            if msg["type"] == "sound":
+            if self.status == "waiting" and msg["type"] == "sound":
                 if self.rooms[self.joinedRoom]["numUsers"] > 1:
                     # 自分以外にいるっぽいので自分は抜ける
                     ws.close()
@@ -111,38 +129,23 @@ class YOpener:
 
     # サーバーから切断時に呼ばれる関数
     def on_close(self, ws, close_status_code, close_msg):
-        if self.channel != None:
-            self.channel.close()
-            self.loop = False
+        pass
 
     # サーバーから接続時に呼ばれる関数
     def on_open(self, ws):
         pass
     
-    # def try_loop(self):
-    #     print("call try_loop")
-    #     while self.loop:
-    #         if self.status != "lobby":
-    #             return 
-    #         if self.tryCount > 120:
-    #             self.send_to_channel("Failed to open room")
-    #             self.ws.close()
-    #             return
-    #         self.try_to_create_room()
-    #         print("sleep 30")
-    #         time.sleep(30)
-    
     def try_to_create_room(self):
         tryOpen = -1
-        for room in self.rooms:  # For production
-        # for rno in range(2):  # For debug
-        #     room = self.rooms[rno] # For debug
+        # for room in self.rooms:  # For production
+        for rno in range(2):  # For debug
+            room = self.rooms[rno] # For debug
             if room["numUsers"] == 0:
                 tryOpen = room["no"]
                 break
         if tryOpen == -1:
             print("No room available")
-            nowtime = (datetime.datetime.utcnow() + datetime.timedelta(hours=9)).time()
+            nowtime = (datetime.datetime.utcnow() + datetime.timedelta(hours=9)).time().strftime('%X')
             self.send_to_channel(f"{str(nowtime)}: No room available")
             return False 
         self.tryCount += 1
@@ -151,7 +154,7 @@ class YOpener:
         req = {
             "c": "join",
             "a": {
-                "name": "Momo",
+                "name": "Mocho",
                 "observer": True,
                 "chatAnswer": False,
                 "color": {
