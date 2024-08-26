@@ -105,7 +105,10 @@ class ExecPy:
                         except TimeoutError as e:
                             print(f"Timeout")
                         except Exception as e:
-                            print(str(e).replace("'./mocho_bot_temp.py'", f"'{commands[1]}'"))
+                            if "mocho_bot_temp.py" in str(e):
+                              print(str(e).replace("'./mocho_bot_temp.py'", f"'{commands[1]}'"))
+                            else:
+                              print(str(e))
                         # f に出力されたものを文字列として取得
                         text = f.getvalue()
 
