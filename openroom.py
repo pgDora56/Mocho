@@ -137,9 +137,9 @@ class YOpener:
     
     def try_to_create_room(self):
         tryOpen = -1
-        # for room in self.rooms:  # For production
-        for rno in range(2):  # For debug
-            room = self.rooms[rno] # For debug
+        for room in self.rooms:  # For production
+        # for rno in range(2):  # For debug
+            # room = self.rooms[rno] # For debug
             if room["numUsers"] == 0:
                 tryOpen = room["no"]
                 break
