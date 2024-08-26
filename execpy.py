@@ -16,7 +16,7 @@ class ExecPy:
             dt_now = datetime.datetime.now()
             with open(f"programs/{filename}.py", mode="w", encoding="utf-8") as f:
                 f.write(f"# Created by {author} at {dt_now.strftime('%Y-%m-%d %H:%M:%S')}\n" + code)
-                os.chmod(f"programs/{filename}.py", 0o775)
+                os.chmod(f"programs/{filename}.py", 0o777)
         else:
             # codeがない場合，実行するコードを生成
             with open(f"programs/{filename}.py", mode="r", encoding="utf-8") as f:
@@ -25,7 +25,7 @@ class ExecPy:
         code = f"mocho = {args}  # Insert by MochoBot\n\n" + code
         with open(TEMP_FILEPATH, mode="w", encoding="utf-8") as f:
             f.write(code)
-            os.chmod(TEMP_FILEPATH, 0o775)
+            os.chmod(TEMP_FILEPATH, 0o777)
 
         if case:
             for c in glob.glob("case/*"):
