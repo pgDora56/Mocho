@@ -51,7 +51,7 @@ class ExecPy:
         if len(lines) <= 1:
             lines.append("")
         
-        if lines[0].startswith("py") and lines[1] == "```":
+        if lines[0].startswith("py") and lines[1] in ["```", "```py", "```python"]:
             commands = lines[0].split()
             wakeword = commands.pop(0)
             if not wakeword in ["py", "python"]:
